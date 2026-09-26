@@ -6,6 +6,10 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "vm.h"
+#include "procinfo.h"
+
+extern struct proc proc[NPROC];
+extern struct spinlock wait_lock;
 
 uint64
 sys_exit(void)
@@ -109,4 +113,66 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+uint64
+sys_getprocsinfo(void)
+{
+  uint64 addr;
+  int maxprocs;
+
+  argaddr(0, &addr);
+  argint(1, &maxprocs);
+
+  if (maxprocs <= 0)
+    return 0;
+
+  struct proc *p;
+  struct procinfo info;
+  struct proc *curproc = myproc();
+  int count = 0;
+
+  /*
+   * wait_lock must be acquired before any proc lock
+   * because p->parent is protected by wait_lock.
+   */
+  acquire(&wait_lock);
+
+  for (p = proc; p < &proc[NPROC] && count < maxprocs; p++) {
+    acquire(&p->lock);
+
+    if (p->state == UNUSED) {
+      release(&p->lock);
+      continue;
+    }
+
+    info.pid = p->pid;
+
+    if (p->parent != 0)
+      info.ppid = p->parent->pid;
+    else
+      info.ppid = 0;
+
+    info.state = p->state;
+    info.cpu_ticks = p->cpu_ticks;
+    info.sz = p->sz;
+
+    safestrcpy(info.name, p->name, sizeof(info.name));
+
+    release(&p->lock);
+
+    if (copyout(curproc->pagetable,
+                curproc->sz,
+                addr + count * sizeof(struct procinfo),
+                (char *)&info,
+                sizeof(struct procinfo)) < 0) {
+      release(&wait_lock);
+      return -1;
+    }
+
+    count++;
+  }
+
+  release(&wait_lock);
+
+  return count;
 }

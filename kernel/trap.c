@@ -166,6 +166,8 @@ kerneltrap()
 void
 clockintr()
 {
+  struct proc *p = myproc();
+
   if (cpuid() == 0) {
     acquire(&tickslock);
     ticks++;
@@ -173,6 +175,10 @@ clockintr()
     release(&tickslock);
   }
 
+  if (p != 0 && p->state == RUNNING)
+    p->cpu_ticks++;
+
+  // ask for the next timer interrupt
   // ask for the next timer interrupt. this also clears
   // the interrupt request. 1000000 is about a tenth
   // of a second.

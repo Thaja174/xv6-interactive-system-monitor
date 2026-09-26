@@ -163,6 +163,7 @@ freeproc(struct proc *p)
   p->pagetable = 0;
   p->sz = 0;
   p->pid = 0;
+  p->cpu_ticks = 0;
   p->name[0] = 0;
   p->chan = 0;
   p->killed = 0;
