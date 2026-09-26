@@ -1,3 +1,4 @@
+
 //
 // File-system system calls.
 // Mostly argument checking, since we don't trust
@@ -42,7 +43,7 @@ fdalloc(struct file *f)
   int fd;
   struct proc *p = myproc();
 
-  for (fd = 0; fd < NOFILE; fd++) {
+  for (fd = 0; fd < MAX_OPEN_FDS; fd++) {
     if (p->ofile[fd] == 0) {
       p->ofile[fd] = f;
       return fd;

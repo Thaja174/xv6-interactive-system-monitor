@@ -150,6 +150,7 @@ UPROGS=\
 	$U/_forphan\
 	$U/_dorphan\
 	$U/_sync\
+        $U/_fdguardtest\
         $U/_procinfo\
 
 fs.img: mkfs/mkfs README $(UPROGS)
