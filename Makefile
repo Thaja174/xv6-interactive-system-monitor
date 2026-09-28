@@ -152,7 +152,7 @@ UPROGS=\
 	$U/_sync\
         $U/_fdguardtest\
         $U/_procinfo\
-
+	$U/_monitor
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
 
@@ -204,3 +204,4 @@ check-qemu-version:
 .PHONY: fmt
 fmt:
 	clang-format -i $(wildcard kernel/*.[ch] user/*.[ch] mkfs/*.c)
+
